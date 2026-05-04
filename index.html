@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeDiff - The Logic Interpreter v3.4</title>
+    <title>VibeDiff - The Logic Interpreter v3.5</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -69,7 +69,7 @@
         .item_row { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; border-radius: 8px; font-family: "Fira Code", monospace; font-size: 0.82rem; color: #475569; user-select: none; }
         .item_row:hover { background: #f1f5f9; }
         .item_selected { background: #6366f1 !important; color: #fff !important; font-weight: 600; }
-        .item_skip { opacity: 0.4; color: #94a3b8; }
+        .item_skip { opacity: 0.6; color: #94a3b8; }
         .badge_skip { font-size: 0.6rem; background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-weight: 700; color: #94a3b8; margin-left: auto; }
 
         /* ─── Inspector ─── */
@@ -97,6 +97,8 @@
         .hero_text { text-align: center; padding: 60px 0; }
         .hero_title { font-size: 3.5rem; font-weight: 900; color: #1e293b; letter-spacing: -2px; }
         .hero_tag { display: inline-block; padding: 6px 12px; background: #6366f1; color: #fff; border-radius: 8px; font-size: 0.8rem; font-weight: 800; margin-bottom: 20px; }
+
+        .warning_box { background: #fff7ed; border: 1px solid #ffedd5; padding: 16px; border-radius: 12px; color: #9a3412; font-size: 0.85rem; margin-top: 16px; display: flex; gap: 10px; align-items: center; }
     </style>
 </head>
 <body>
@@ -136,7 +138,10 @@
             return (
                 <div style={{ marginLeft: depth * 10 }}>
                     <div className={`item_row ${selected === node.path ? 'item_selected' : ''} ${node.ignored ? 'item_skip' : ''}`} 
-                         onClick={() => { if(node.kind === 'dir') setIsOpen(!isOpen); onSelect(node.kind === 'file' ? node : null); }}>
+                         onClick={() => { 
+                             if(node.kind === 'dir') setIsOpen(!isOpen); 
+                             onSelect(node); 
+                         }}>
                         <span>{node.kind === 'dir' ? (isOpen ? '📂' : '📁') : '📄'}</span>
                         <span style={{overflow:'hidden', textOverflow:'ellipsis'}}>{node.name}</span>
                         {node.ignored && <span className="badge_skip">SKIP</span>}
@@ -226,11 +231,11 @@
 
             const interpretation = useMemo(() => {
                 if (!selected) return null;
-                const role = ROLES[selected.name] || { name: "構成要素", exp: "アプリを形作る大切なパーツの一つです。" };
+                const role = ROLES[selected.name] || { name: selected.kind === 'dir' ? "フォルダ" : "構成要素", exp: selected.kind === 'dir' ? "関連するファイルがまとまっています。" : "アプリを形作る大切なパーツの一つです。" };
                 const content = (step === 2 ? (afterMap?.[selected.path] || beforeMap[selected.path]) : beforeMap[selected.path]) || "";
                 const lines = [];
                 PATTERNS.forEach(p => { if(p.key.test(content)) lines.push(p.act); });
-                return { ...role, logic: lines.join("\n") || "独自の処理が含まれています。", content };
+                return { ...role, logic: lines.join("\n") || (selected.kind === 'file' ? "独自の処理が含まれています。" : ""), content };
             }, [selected, beforeMap, afterMap, step]);
 
             return (
@@ -328,23 +333,31 @@
                                                     <span className="section_label">役割と動き</span>
                                                     <div className="section_content">{interpretation.exp}</div>
                                                     <div className="section_content" style={{marginTop:12, color:'#6366f1', fontWeight:500}}>{interpretation.logic}</div>
+                                                    {selected.ignored && (
+                                                        <div className="warning_box">
+                                                            <span>ℹ️</span>
+                                                            この項目は自動管理（スキップ）対象です。この中の差分は分析結果やアプリの動作に影響を与えませんので、無視して問題ありません。
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <div className="code_preview">
-                                                    <div className="code_scroll">
-                                                        {interpretation.content === "[BINARY]" ? (
-                                                            <div style={{padding:40, textAlign:'center', color:'#94a3b8'}}>画像またはバイナリファイルのため表示不可</div>
-                                                        ) : (
-                                                            step === 1 ? interpretation.content?.slice(0, 3000) : (
-                                                                Diff.diffLines(beforeMap[selected.path] || "", afterMap[selected.path] || "").map((part, i) => (
-                                                                    <div key={i} className={`diff_line ${part.added ? 'line_add' : part.removed ? 'line_del' : ''}`}>
-                                                                        <div className="line_sign">{part.added ? '+' : (part.removed ? '-' : ' ')}</div>
-                                                                        <div style={{whiteSpace:'pre'}}>{part.value}</div>
-                                                                    </div>
-                                                                ))
-                                                            )
-                                                        )}
+                                                {!selected.ignored && (
+                                                    <div className="code_preview">
+                                                        <div className="code_scroll">
+                                                            {interpretation.content === "[BINARY]" ? (
+                                                                <div style={{padding:40, textAlign:'center', color:'#94a3b8'}}>画像またはバイナリファイルのため表示不可</div>
+                                                            ) : (
+                                                                step === 1 ? interpretation.content?.slice(0, 3000) : (
+                                                                    Diff.diffLines(beforeMap[selected.path] || "", afterMap[selected.path] || "").map((part, i) => (
+                                                                        <div key={i} className={`diff_line ${part.added ? 'line_add' : part.removed ? 'line_del' : ''}`}>
+                                                                            <div className="line_sign">{part.added ? '+' : (part.removed ? '-' : ' ')}</div>
+                                                                            <div style={{whiteSpace:'pre'}}>{part.value}</div>
+                                                                        </div>
+                                                                    ))
+                                                                )
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         ) : <div style={{textAlign:'center', padding:100, color:'#94a3b8'}}>項目を選択してください</div>}
                                     </div>
