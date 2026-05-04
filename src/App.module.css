@@ -1,0 +1,327 @@
+.app {
+  min-height: 100vh;
+  background: #080914;
+  color: #e5e7eb;
+  font-family: "Inter", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+
+/* ─── Header ─── */
+.header {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.headerInner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logoIcon {
+  font-size: 1.4rem;
+}
+
+.logoText {
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+
+.logoTag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: rgba(167, 139, 250, 0.2);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tagline {
+  font-size: 0.8rem;
+  color: #4b5563;
+  margin: 0;
+}
+
+/* ─── Main ─── */
+.main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ─── 非対応 ─── */
+.unsupported {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+/* ─── Steps ─── */
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.stepCard {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  transition: all 0.2s;
+}
+
+.stepActive {
+  border-color: rgba(167, 139, 250, 0.3);
+  background: rgba(167, 139, 250, 0.05);
+}
+
+.stepDisabled {
+  opacity: 0.4;
+}
+
+.stepNum {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+.stepActive .stepNum {
+  color: #a78bfa;
+}
+
+.stepBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.stepTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 2px;
+}
+
+.stepDesc {
+  font-size: 0.72rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.stepBtn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.stepBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepBtnPrimary {
+  background: linear-gradient(135deg, #a78bfa, #818cf8);
+  color: #fff;
+}
+
+.stepBtnPrimary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c4b5fd, #a5b4fc);
+  transform: translateY(-1px);
+}
+
+.stepBtnAccent {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #000;
+}
+
+.stepBtnAccent:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6ee7b7, #34d399);
+  transform: translateY(-1px);
+}
+
+.stepBtnDone {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #34d399;
+}
+
+.stepBtnDone:hover:not(:disabled) {
+  background: rgba(52, 211, 153, 0.25);
+}
+
+.stepArrow {
+  color: #374151;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.resetBtn {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #6b7280;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.resetBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f0f0f0;
+}
+
+/* ─── Snapshots ─── */
+.snapshots {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.snapshotTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.snapshotList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.snapshotItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+
+.snapshotLabel {
+  color: #a78bfa;
+  font-weight: 500;
+  flex: 1;
+}
+
+.snapshotDate {
+  color: #4b5563;
+  font-family: monospace;
+}
+
+.snapshotCount {
+  color: #374151;
+  font-family: monospace;
+}
+
+/* ─── Results ─── */
+.results {
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Empty State ─── */
+.emptyState {
+  text-align: center;
+  padding: 60px 24px;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin: 0 0 12px;
+}
+
+.emptyDesc {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.8;
+  margin: 0 0 32px;
+}
+
+.features {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: #9ca3af;
+  transition: all 0.15s;
+}
+
+.featureItem:hover {
+  background: rgba(167, 139, 250, 0.08);
+  border-color: rgba(167, 139, 250, 0.2);
+  color: #c4b5fd;
+  transform: translateY(-2px);
+}

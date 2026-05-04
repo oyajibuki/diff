@@ -1,0 +1,137 @@
+.container {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #f0f0f0;
+  padding: 18px 20px 14px;
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-wrap: wrap;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rowSelected {
+  background: rgba(167, 139, 250, 0.06);
+}
+
+.dot {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.pathInfo {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dir {
+  color: #6b7280;
+  font-size: 0.78rem;
+  font-family: "Fira Code", monospace;
+}
+
+.fileName {
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  font-family: "Fira Code", monospace;
+  font-weight: 500;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.roleBadge {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.typeBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.size {
+  font-size: 0.72rem;
+  color: #4b5563;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.diffBtn {
+  padding: 4px 10px;
+  background: rgba(167, 139, 250, 0.12);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+  color: #a78bfa;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.diffBtn:hover {
+  background: rgba(167, 139, 250, 0.25);
+}
+
+.diffBtnActive {
+  background: rgba(167, 139, 250, 0.25);
+  border-color: rgba(167, 139, 250, 0.6);
+}
+
+.empty {
+  text-align: center;
+  padding: 48px;
+  color: #6b7280;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}

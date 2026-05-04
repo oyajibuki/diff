@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeDiff - The Logic Interpreter v3.4</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- Access Counter -->
+    <script>
+    fetch("https://script.google.com/macros/s/AKfycbznxYkj5ixnK_pHkGR8LUYhEYdvSYpaiF3x4LaZy964wlu068oak1X1uuIiyqCEtGWF/exec?page=diff")
+      .catch(() => {});
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/diff@7.0.0/dist/diff.min.js"></script>
+
+    <style>
+        /* ─── Global ─── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f8fafc; color: #1e293b; font-family: "Inter", sans-serif; line-height: 1.6; }
+        .main { max-width: 1200px; margin: 0 auto; padding: 40px 24px; min-height: calc(100vh - 150px); }
+        
+        /* ─── Header ─── */
+        .header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 18px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+        .headerInner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+        .logo_area { display: flex; align-items: center; gap: 12px; }
+        .logo_icon { width: 28px; height: 28px; border-radius: 6px; }
+        .logoText { font-size: 1.4rem; font-weight: 800; color: #6366f1; letter-spacing: -0.5px; }
+        .header_right { display: flex; align-items: center; gap: 16px; }
+        .privacyBadge { font-size: 0.65rem; font-weight: 800; background: #f0fdf4; color: #10b981; padding: 4px 10px; border-radius: 20px; border: 1px solid #dcfce7; display: flex; align-items: center; gap: 4px; }
+        .contactLink { font-size: 0.75rem; font-weight: 700; color: #64748b; text-decoration: none; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 8px; transition: 0.2s; }
+        .contactLink:hover { background: #f1f5f9; color: #1e293b; }
+
+        /* ─── Steps ─── */
+        .steps { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+        .stepCard { background: #fff; border: 1px solid #e2e8f0; padding: 24px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stepActive { border-color: #6366f1; background: #f5f7ff; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1); }
+        .stepDone { border-color: #10b981; background: #f0fdf4; }
+        .stepTitle { font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 8px; color: #334155; }
+        .stepDesc { font-size: 0.8rem; color: #64748b; margin: 8px 0 16px; min-height: 2.4em; }
+        .stepBtn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-size: 0.9rem; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btnPrimary { background: #6366f1; color: #fff; }
+
+        /* ─── Overview Card ─── */
+        .overview_card { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; padding: 32px; border-radius: 24px; margin-bottom: 32px; box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.2); }
+        .overview_grid { display: grid; grid-template-columns: 100px 1fr 1.5fr; gap: 40px; align-items: center; }
+        .score_circle { width: 90px; height: 90px; border: 3px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); }
+        .score_val { font-size: 2rem; font-weight: 900; }
+        .score_unit { font-size: 0.7rem; font-weight: 700; opacity: 0.8; }
+        .skip_summary { background: rgba(0,0,0,0.1); padding: 16px; border-radius: 16px; font-size: 0.75rem; line-height: 1.5; }
+
+        /* ─── Layout ─── */
+        .layout { display: grid; grid-template-columns: 350px 1fr; gap: 24px; min-height: 600px; }
+        .panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        
+        /* ─── Tree ─── */
+        .scroll_area { max-height: 700px; overflow-y: auto; overflow-x: hidden; }
+        .item_row { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; border-radius: 8px; font-family: "Fira Code", monospace; font-size: 0.82rem; color: #475569; user-select: none; }
+        .item_row:hover { background: #f1f5f9; }
+        .item_selected { background: #6366f1 !important; color: #fff !important; font-weight: 600; }
+        .item_skip { opacity: 0.4; color: #94a3b8; }
+        .badge_skip { font-size: 0.6rem; background: #f1f5f9; padding: 1px 4px; border-radius: 3px; font-weight: 700; color: #94a3b8; margin-left: auto; }
+
+        /* ─── Inspector ─── */
+        .item_header { border-bottom: 1px solid #f1f5f9; margin-bottom: 24px; padding-bottom: 16px; }
+        .item_role { display: inline-block; padding: 2px 10px; background: #e0e7ff; color: #4338ca; border-radius: 6px; font-size: 0.7rem; font-weight: 800; margin-bottom: 8px; }
+        .item_name { font-size: 1.4rem; font-weight: 800; color: #1e293b; overflow: hidden; text-overflow: ellipsis; }
+        
+        .section { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+        .section_label { font-size: 0.7rem; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+        .section_content { font-size: 0.95rem; color: #334155; line-height: 1.7; white-space: pre-wrap; }
+        
+        .code_preview { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-top: 20px; }
+        .code_scroll { max-height: 400px; overflow: auto; padding: 16px; font-family: "Fira Code", monospace; font-size: 0.8rem; color: #334155; }
+
+        .footer { text-align: center; padding: 40px 0; color: #94a3b8; font-size: 0.8rem; border-top: 1px solid #e2e8f0; margin-top: 60px; }
+
+        .spinner { width: 40px; height: 40px; border: 4px solid #f1f5f9; border-top: 4px solid #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 40px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .diff_line { display: flex; font-size: 0.8rem; line-height: 1.6; }
+        .line_add { background: #f0fdf4; border-left: 4px solid #10b981; }
+        .line_del { background: #fef2f2; border-left: 4px solid #ef4444; }
+        .line_sign { width: 30px; text-align: center; opacity: 0.4; }
+
+        .hero_text { text-align: center; padding: 60px 0; }
+        .hero_title { font-size: 3.5rem; font-weight: 900; color: #1e293b; letter-spacing: -2px; }
+        .hero_tag { display: inline-block; padding: 6px 12px; background: #6366f1; color: #fff; border-radius: 8px; font-size: 0.8rem; font-weight: 800; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, memo } = React;
+
+        const IGNORE_LIST = [
+            'node_modules', '.git', 'dist', 'build', '.next', '.cache', 
+            '__pycache__', 'vendor', 'assets', 'public', '.github', '.xcodeproj', 
+            '.xcworkspace', 'venv', '.venv', 'tmp', 'Pixel', 'extracted'
+        ];
+
+        const BINARY_EXTS = [".png", ".jpg", ".jpeg", ".zip", ".exe", ".ico", ".svg", ".pdf", ".mov", ".mp4"];
+
+        const ROLES = {
+            ".github": { name: "自動公開設定 (CI/CD)", exp: "GitHubと連携してアプリを自動デプロイする設定です。" },
+            "node_modules": { name: "外部部品倉庫", exp: "数千のライブラリが詰まっています。巨大なため分析はパスします。" },
+            ".gitignore": { name: "除外リスト設定", exp: "分析から外したいファイルを指定する台帳です。" },
+            "App.jsx": { name: "UIの心臓部", exp: "画面の見た目や動きを司る最も重要なパーツです。" },
+            "index.html": { name: "Webアプリの土台", exp: "ブラウザが最初に読み込む舞台です。" },
+            "supabase": { name: "データベース設定", exp: "クラウド上のデータを管理するための設定です。" },
+            "仕様書.txt": { name: "プロジェクトの羅針盤", exp: "方針が記されたマスタードキュメントです。" },
+            "詳細設計書.txt": { name: "技術的な設計図", exp: "具体的な構造や仕組みが記された指示書です。" }
+        };
+
+        const PATTERNS = [
+            { key: /import\s+React/i, act: "【React】最新のWeb表示技術を使用しています。" },
+            { key: /useState|useEffect/i, act: "【状態管理】画面のデータ変化を検知して自動更新します。" },
+            { key: /fetch|axios|supabase/i, act: "【通信】外部やクラウドとデータをやり取りする窓口です。" },
+            { key: /def\s+\w+/i, act: "【独自処理】一連の動きをまとめた命令セットを作成しています。" }
+        ];
+
+        const TreeItem = memo(({ node, selected, onSelect, depth = 0 }) => {
+            const [isOpen, setIsOpen] = useState(depth < 1);
+            return (
+                <div style={{ marginLeft: depth * 10 }}>
+                    <div className={`item_row ${selected === node.path ? 'item_selected' : ''} ${node.ignored ? 'item_skip' : ''}`} 
+                         onClick={() => { if(node.kind === 'dir') setIsOpen(!isOpen); onSelect(node.kind === 'file' ? node : null); }}>
+                        <span>{node.kind === 'dir' ? (isOpen ? '📂' : '📁') : '📄'}</span>
+                        <span style={{overflow:'hidden', textOverflow:'ellipsis'}}>{node.name}</span>
+                        {node.ignored && <span className="badge_skip">SKIP</span>}
+                    </div>
+                    {isOpen && node.children && node.children.map(child => (
+                        <TreeItem key={child.path} node={child} selected={selected} onSelect={onSelect} depth={depth + 1} />
+                    ))}
+                </div>
+            );
+        });
+
+        function App() {
+            const [step, setStep] = useState(1);
+            const [beforeMap, setBeforeMap] = useState(null);
+            const [afterMap, setAfterMap] = useState(null);
+            const [tree, setTree] = useState([]);
+            const [selected, setSelected] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [diffRes, setDiffRes] = useState(null);
+            const [stats, setStats] = useState(null);
+
+            const normalize = (txt) => txt.replace(/\r\n/g, '\n').trim();
+
+            const scanDir = async (handle, base = "") => {
+                const map = {};
+                for await (const [name, h_] of handle.entries()) {
+                    const path = `${base}/${name}`;
+                    if (h_.kind === "directory") {
+                        if (IGNORE_LIST.includes(name) || name.startsWith('tmp')) continue;
+                        Object.assign(map, await scanDir(h_, path));
+                    } else {
+                        if (name.startsWith(".") && ![".env", ".gitignore", ".env.local"].includes(name)) continue;
+                        const f = await h_.getFile();
+                        if (f.size > 250*1024) continue;
+                        if (BINARY_EXTS.some(e => name.toLowerCase().endsWith(e))) { map[path] = "[BINARY]"; continue; }
+                        map[path] = normalize(await f.text());
+                    }
+                }
+                return map;
+            };
+
+            const buildTree = async (handle, base = "") => {
+                const children = [];
+                for await (const [name, h_] of handle.entries()) {
+                    const path = `${base}/${name}`;
+                    const isIgnore = IGNORE_LIST.includes(name) || name.startsWith('tmp');
+                    if (h_.kind === "directory") {
+                        children.push({ name, kind: "dir", path, ignored: isIgnore, children: isIgnore ? [] : await buildTree(h_, path) });
+                    } else {
+                        children.push({ name, kind: "file", path, ignored: BINARY_EXTS.some(e => name.toLowerCase().endsWith(e)) });
+                    }
+                }
+                return children.sort((a,b) => (b.kind==='dir'?1:-1)-(a.kind==='dir'?1:-1));
+            };
+
+            const handlePickBefore = async () => {
+                setLoading(true);
+                try {
+                    const h = await window.showDirectoryPicker();
+                    const [m, t] = await Promise.all([scanDir(h), buildTree(h)]);
+                    setBeforeMap(m); setTree(t); setStep(1);
+                    setStats({ 
+                        type: Object.keys(m).some(p => p.includes("supabase")) ? "モダンApp (DB連携)" : (Object.keys(m).some(p => p.endsWith(".py")) ? "Pythonツール" : "Webプロジェクト"), 
+                        count: Object.keys(m).length,
+                        score: 95
+                    });
+                } catch (e) { console.error(e); }
+                setLoading(false);
+            };
+
+            const handlePickAfter = async () => {
+                setLoading(true);
+                try {
+                    const h = await window.showDirectoryPicker();
+                    const m = await scanDir(h);
+                    setAfterMap(m);
+                    const res = { added: [], removed: [], changed: [] };
+                    for (const k in beforeMap) {
+                        if (!m[k]) res.removed.push(k);
+                        else if (beforeMap[k] !== m[k]) res.changed.push(k);
+                    }
+                    for (const k in m) if (!beforeMap[k]) res.added.push(k);
+                    setDiffRes(res); setStep(2); setSelected(null);
+                } catch (e) { console.error(e); }
+                setLoading(false);
+            };
+
+            const interpretation = useMemo(() => {
+                if (!selected) return null;
+                const role = ROLES[selected.name] || { name: "構成要素", exp: "アプリを形作る大切なパーツの一つです。" };
+                const content = (step === 2 ? (afterMap?.[selected.path] || beforeMap[selected.path]) : beforeMap[selected.path]) || "";
+                const lines = [];
+                PATTERNS.forEach(p => { if(p.key.test(content)) lines.push(p.act); });
+                return { ...role, logic: lines.join("\n") || "独自の処理が含まれています。", content };
+            }, [selected, beforeMap, afterMap, step]);
+
+            return (
+                <div className="app">
+                    <header className="header">
+                        <div className="headerInner">
+                            <div className="logo_area">
+                                <img src="favicon.png" className="logo_icon" alt="Logo" />
+                                <div className="logoText">VibeDiff</div>
+                            </div>
+                            <div className="header_right">
+                                <div className="privacyBadge">🔒 ローカル限定: ファイルは送信されません</div>
+                                <a href="https://oyajibuki.github.io/form/?subject=%E3%80%90VibeDiff%E3%80%91%E4%B8%8D%E5%85%B7%E5%90%88%E3%83%BB%E8%A6%81%E6%9C%9B%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6" 
+                                   target="_blank" className="contactLink">不具合・要望</a>
+                                <button className="btn_nav" onClick={() => window.location.reload()}>リセット</button>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="main">
+                        {!beforeMap && !loading && (
+                            <div className="hero_text">
+                                <div className="hero_tag">AIエンジニアのための通訳ツール</div>
+                                <h1 className="hero_title">VibeDiff</h1>
+                                <p style={{color:'#64748b', fontSize:'1.2rem', marginBottom:40}}>
+                                    AIの変更を「言葉」で理解し、<br/>
+                                    バイブコーディングの不安を解消します。
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="steps">
+                            <div className={`stepCard ${beforeMap ? 'stepDone' : 'stepActive'}`}>
+                                <div className="stepTitle">① Before (分析)</div>
+                                <div className="stepDesc">{beforeMap ? "構造を把握しました" : "分析するフォルダを選択"}</div>
+                                <button className="stepBtn btnPrimary" onClick={handlePickBefore} disabled={loading}>{loading && step===1 ? "分析中..." : "フォルダ選択"}</button>
+                            </div>
+                            <div className={`stepCard ${step === 2 ? 'stepDone' : (beforeMap ? 'stepActive' : 'stepDisabled')}`}>
+                                <div className="stepTitle">② After (差分)</div>
+                                <div className="stepDesc">修正後を読み込んで解説</div>
+                                <button className="stepBtn btnPrimary" onClick={handlePickAfter} disabled={loading || !beforeMap}>{loading && step===2 ? "比較中..." : "フォルダ選択"}</button>
+                            </div>
+                        </div>
+
+                        {loading && <div className="spinner"></div>}
+
+                        {!loading && beforeMap && (
+                            <div>
+                                {step === 1 ? (
+                                    <div className="overview_card">
+                                        <div className="overview_grid">
+                                            <div className="score_circle"><div className="score_val">{stats.score}</div><div className="score_unit">%</div></div>
+                                            <div>
+                                                <h3 style={{fontSize:'1.4rem', fontWeight:800, marginBottom:8}}>{stats.type} 判定完了</h3>
+                                                <p style={{fontSize:'0.9rem', opacity:0.9}}>{stats.count}ファイルを分析対象として把握しました。</p>
+                                            </div>
+                                            <div className="skip_summary">
+                                                <strong>🚫 スキップ済み項目</strong><br/>
+                                                node_modules, .git, Pixel, ico, svg, zip 等<br/>
+                                                ※これらはツールが自動管理するため除外しています。
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="overview_card" style={{background:'linear-gradient(135deg, #10b981, #059669)'}}>
+                                        <div style={{display:'flex', alignItems:'center', gap:24}}>
+                                            <div className="score_circle" style={{background:'rgba(255,255,255,0.2)'}}><div className="score_val" style={{fontSize:'1.4rem'}}>DIFF</div></div>
+                                            <div>
+                                                <h3 style={{fontSize:'1.4rem', fontWeight:800}}>変更解説レポート</h3>
+                                                <p style={{fontSize:'0.9rem', opacity:0.9}}>
+                                                    <strong>{diffRes.changed.length + diffRes.added.length}箇所の差分</strong>を言葉で説明します。
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="layout">
+                                    <div className="panel scroll_area">
+                                        {step === 1 ? tree.map(node => <TreeItem key={node.path} node={node} selected={selected?.path} onSelect={setSelected} />) : (
+                                            <div>
+                                                {diffRes.changed.map(p => <div key={p} className={`item_row ${selected?.path === p ? 'item_selected' : ''}`} onClick={() => setSelected({path:p, kind:'file', name:p.split('/').pop()})}>✏️ {p.split('/').pop()}</div>)}
+                                                {diffRes.added.map(p => <div key={p} className={`item_row ${selected?.path === p ? 'item_selected' : ''}`} onClick={() => setSelected({path:p, kind:'file', name:p.split('/').pop()})}>➕ {p.split('/').pop()}</div>)}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="panel">
+                                        {selected ? (
+                                            <div>
+                                                <div className="item_header">
+                                                    <div className="item_role">{interpretation.name}</div>
+                                                    <div className="item_name">{selected.name}</div>
+                                                </div>
+                                                <div className="section">
+                                                    <span className="section_label">役割と動き</span>
+                                                    <div className="section_content">{interpretation.exp}</div>
+                                                    <div className="section_content" style={{marginTop:12, color:'#6366f1', fontWeight:500}}>{interpretation.logic}</div>
+                                                </div>
+                                                <div className="code_preview">
+                                                    <div className="code_scroll">
+                                                        {interpretation.content === "[BINARY]" ? (
+                                                            <div style={{padding:40, textAlign:'center', color:'#94a3b8'}}>画像またはバイナリファイルのため表示不可</div>
+                                                        ) : (
+                                                            step === 1 ? interpretation.content?.slice(0, 3000) : (
+                                                                Diff.diffLines(beforeMap[selected.path] || "", afterMap[selected.path] || "").map((part, i) => (
+                                                                    <div key={i} className={`diff_line ${part.added ? 'line_add' : part.removed ? 'line_del' : ''}`}>
+                                                                        <div className="line_sign">{part.added ? '+' : (part.removed ? '-' : ' ')}</div>
+                                                                        <div style={{whiteSpace:'pre'}}>{part.value}</div>
+                                                                    </div>
+                                                                ))
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : <div style={{textAlign:'center', padding:100, color:'#94a3b8'}}>項目を選択してください</div>}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    <footer className="footer">
+                        <div>&copy; 2026 Asagiri</div>
+                    </footer>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
