@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeDiff - The Logic Interpreter v3.5</title>
+    <title>VibeDiff - The Logic Interpreter v3.6</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -59,6 +59,7 @@
         .score_val { font-size: 2rem; font-weight: 900; }
         .score_unit { font-size: 0.7rem; font-weight: 700; opacity: 0.8; }
         .skip_summary { background: rgba(0,0,0,0.1); padding: 16px; border-radius: 16px; font-size: 0.75rem; line-height: 1.5; }
+        .project_badge { display: inline-block; padding: 4px 12px; background: rgba(255,255,255,0.2); border-radius: 6px; font-size: 0.75rem; font-weight: 800; margin-top: 8px; border: 1px solid rgba(255,255,255,0.3); }
 
         /* ─── Layout ─── */
         .layout { display: grid; grid-template-columns: 350px 1fr; gap: 24px; min-height: 600px; }
@@ -204,7 +205,7 @@
                     const [m, t] = await Promise.all([scanDir(h), buildTree(h)]);
                     setBeforeMap(m); setTree(t); setStep(1);
                     setStats({ 
-                        type: Object.keys(m).some(p => p.includes("supabase")) ? "モダンApp (DB連携)" : (Object.keys(m).some(p => p.endsWith(".py")) ? "Pythonツール" : "Webプロジェクト"), 
+                        type: Object.keys(m).some(p => p.includes("supabase")) ? "React / Supabase" : (Object.keys(m).some(p => p.endsWith(".py")) ? "Python" : (Object.keys(m).some(p => p.endsWith(".swift")) ? "iOS (Swift)" : "Standard Web")), 
                         count: Object.keys(m).length,
                         score: 95
                     });
@@ -289,8 +290,9 @@
                                         <div className="overview_grid">
                                             <div className="score_circle"><div className="score_val">{stats.score}</div><div className="score_unit">%</div></div>
                                             <div>
-                                                <h3 style={{fontSize:'1.4rem', fontWeight:800, marginBottom:8}}>{stats.type} 判定完了</h3>
-                                                <p style={{fontSize:'0.9rem', opacity:0.9}}>{stats.count}ファイルを分析対象として把握しました。</p>
+                                                <h3 style={{fontSize:'1.4rem', fontWeight:800, marginBottom:4}}>分析完了</h3>
+                                                <div className="project_badge">{stats.type} プロジェクト</div>
+                                                <p style={{fontSize:'0.85rem', opacity:0.9, marginTop:12}}>{stats.count}ファイルを分析対象として把握しました。</p>
                                             </div>
                                             <div className="skip_summary">
                                                 <strong>🚫 スキップ済み項目</strong><br/>
@@ -373,7 +375,7 @@
             );
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+            ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
