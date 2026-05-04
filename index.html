@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeDiff - The Logic Interpreter v3.6</title>
+    <title>VibeDiff - The Logic Interpreter v3.7</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -124,7 +124,12 @@
             "index.html": { name: "Webアプリの土台", exp: "ブラウザが最初に読み込む舞台です。" },
             "supabase": { name: "データベース設定", exp: "クラウド上のデータを管理するための設定です。" },
             "仕様書.txt": { name: "プロジェクトの羅針盤", exp: "方針が記されたマスタードキュメントです。" },
-            "詳細設計書.txt": { name: "技術的な設計図", exp: "具体的な構造や仕組みが記された指示書です。" }
+            "詳細設計書.txt": { name: "技術的な設計図", exp: "具体的な構造や仕組みが記された指示書です。" },
+            "public": { name: "公開用静的フォルダ", exp: "画像やHTMLなど、そのまま公開される素材が置かれています。" },
+            "assets": { name: "アセット管理", exp: "画像、ロゴ、アイコンなどの素材がまとめられています。" },
+            ".git": { name: "変更履歴管理", exp: "Gitの履歴データです。アプリの動作には直接関係ありません。" },
+            "dist": { name: "配信パッケージ", exp: "本番公開用にビルド（変換）されたファイル群です。" },
+            "build": { name: "ビルド成果物", exp: "アプリを実行・公開するために生成されたファイルです。" }
         };
 
         const PATTERNS = [
@@ -375,7 +380,7 @@
             );
         }
 
-            ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
