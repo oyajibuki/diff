@@ -100,6 +100,35 @@
         .hero_tag { display: inline-block; padding: 6px 12px; background: #6366f1; color: #fff; border-radius: 8px; font-size: 0.8rem; font-weight: 800; margin-bottom: 20px; }
 
         .warning_box { background: #fff7ed; border: 1px solid #ffedd5; padding: 16px; border-radius: 12px; color: #9a3412; font-size: 0.85rem; margin-top: 16px; display: flex; gap: 10px; align-items: center; }
+
+        /* ─── モード切り替え ─── */
+        .modeToggle { display: flex; gap: 8px; margin-bottom: 24px; }
+        .modeBtn { padding: 8px 20px; border-radius: 10px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .modeBtn:hover { border-color: #6366f1; color: #6366f1; }
+        .modeBtnActive { background: #6366f1 !important; color: #fff !important; border-color: #6366f1 !important; }
+
+        /* ─── テキスト貼り付けモード ─── */
+        .pasteSection { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .pasteSectionTitle { font-size: 1rem; font-weight: 800; color: #334155; margin-bottom: 6px; }
+        .pasteSectionDesc { font-size: 0.82rem; color: #64748b; margin-bottom: 20px; }
+        .pasteFilenameRow { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+        .pasteFilenameLabel { font-size: 0.8rem; font-weight: 700; color: #475569; white-space: nowrap; }
+        .pasteFilenameInput { padding: 9px 14px; border: 1px solid #e2e8f0; border-radius: 10px; font-family: "Fira Code", monospace; font-size: 0.85rem; width: 240px; color: #1e293b; }
+        .pasteFilenameInput:focus { outline: none; border-color: #6366f1; }
+        .pasteArea { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .pasteCard { display: flex; flex-direction: column; gap: 8px; }
+        .pasteLabel { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 6px; display: inline-block; width: fit-content; }
+        .pasteLabelBefore { background: #fef2f2; color: #ef4444; }
+        .pasteLabelAfter { background: #f0fdf4; color: #10b981; }
+        .pasteTextarea { width: 100%; height: 280px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; font-family: "Fira Code", monospace; font-size: 0.78rem; resize: vertical; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+        .pasteTextarea:focus { outline: none; border-color: #6366f1; background: #fff; }
+        .pasteActions { display: flex; align-items: center; gap: 12px; }
+        .pasteCompareBtn { padding: 12px 32px; background: #6366f1; color: #fff; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .pasteCompareBtn:hover:not(:disabled) { background: #4f46e5; }
+        .pasteCompareBtn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .pasteClearBtn { padding: 12px 20px; background: #fff; color: #94a3b8; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+        .pasteClearBtn:hover { border-color: #cbd5e1; color: #64748b; }
+        @media (max-width: 640px) { .pasteArea { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -169,6 +198,12 @@
             const [diffRes, setDiffRes] = useState(null);
             const [stats, setStats] = useState(null);
 
+            // テキスト貼り付けモード
+            const [pasteMode, setPasteMode] = useState(false);
+            const [pasteFilename, setPasteFilename] = useState('');
+            const [pasteBefore, setPasteBefore] = useState('');
+            const [pasteAfter, setPasteAfter] = useState('');
+
             const normalize = (txt) => txt.replace(/\r\n/g, '\n').trim();
 
             const scanDir = async (handle, base = "") => {
@@ -216,6 +251,26 @@
                     });
                 } catch (e) { console.error(e); }
                 setLoading(false);
+            };
+
+            // テキスト貼り付けで比較
+            const handlePasteCompare = () => {
+                const filename = '/' + (pasteFilename.trim() || 'file.txt');
+                const bm = { [filename]: normalize(pasteBefore) };
+                const am = { [filename]: normalize(pasteAfter) };
+                const res = { added: [], removed: [], changed: [] };
+                for (const k in bm) {
+                    if (!am[k]) res.removed.push(k);
+                    else if (bm[k] !== am[k]) res.changed.push(k);
+                }
+                for (const k in am) if (!bm[k]) res.added.push(k);
+                setBeforeMap(bm);
+                setAfterMap(am);
+                setDiffRes(res);
+                setStep(2);
+                setSelected(null);
+                setStats({ type: 'テキスト貼り付け', count: 1, score: 100 });
+                setPasteMode(false);
             };
 
             const handlePickAfter = async () => {
@@ -273,18 +328,75 @@
                             </div>
                         )}
 
-                        <div className="steps">
-                            <div className={`stepCard ${beforeMap ? 'stepDone' : 'stepActive'}`}>
-                                <div className="stepTitle">① Before (分析)</div>
-                                <div className="stepDesc">{beforeMap ? "構造を把握しました" : "分析するフォルダを選択"}</div>
-                                <button className="stepBtn btnPrimary" onClick={handlePickBefore} disabled={loading}>{loading && step===1 ? "分析中..." : "フォルダ選択"}</button>
-                            </div>
-                            <div className={`stepCard ${step === 2 ? 'stepDone' : (beforeMap ? 'stepActive' : 'stepDisabled')}`}>
-                                <div className="stepTitle">② After (差分)</div>
-                                <div className="stepDesc">修正後を読み込んで解説</div>
-                                <button className="stepBtn btnPrimary" onClick={handlePickAfter} disabled={loading || !beforeMap}>{loading && step===2 ? "比較中..." : "フォルダ選択"}</button>
-                            </div>
+                        {/* モード切り替えタブ */}
+                        <div className="modeToggle">
+                            <button className={`modeBtn ${!pasteMode ? 'modeBtnActive' : ''}`} onClick={() => setPasteMode(false)}>📂 フォルダ比較</button>
+                            <button className={`modeBtn ${pasteMode ? 'modeBtnActive' : ''}`} onClick={() => setPasteMode(true)}>📋 テキスト貼り付け</button>
                         </div>
+
+                        {/* フォルダ比較モード */}
+                        {!pasteMode && (
+                            <div className="steps">
+                                <div className={`stepCard ${beforeMap ? 'stepDone' : 'stepActive'}`}>
+                                    <div className="stepTitle">① Before (分析)</div>
+                                    <div className="stepDesc">{beforeMap ? "構造を把握しました" : "分析するフォルダを選択"}</div>
+                                    <button className="stepBtn btnPrimary" onClick={handlePickBefore} disabled={loading}>{loading && step===1 ? "分析中..." : "フォルダ選択"}</button>
+                                </div>
+                                <div className={`stepCard ${step === 2 ? 'stepDone' : (beforeMap ? 'stepActive' : 'stepDisabled')}`}>
+                                    <div className="stepTitle">② After (差分)</div>
+                                    <div className="stepDesc">修正後を読み込んで解説</div>
+                                    <button className="stepBtn btnPrimary" onClick={handlePickAfter} disabled={loading || !beforeMap}>{loading && step===2 ? "比較中..." : "フォルダ選択"}</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* テキスト貼り付けモード */}
+                        {pasteMode && (
+                            <div className="pasteSection">
+                                <div className="pasteSectionTitle">📋 テキストを貼り付けて比較</div>
+                                <div className="pasteSectionDesc">VibeMapでコピーしたファイル内容を Before に貼り付け、AI修正後の内容を After に貼り付けて比較できます。</div>
+                                <div className="pasteFilenameRow">
+                                    <span className="pasteFilenameLabel">ファイル名：</span>
+                                    <input
+                                        className="pasteFilenameInput"
+                                        type="text"
+                                        placeholder="例: App.tsx, main.py"
+                                        value={pasteFilename}
+                                        onChange={e => setPasteFilename(e.target.value)}
+                                    />
+                                </div>
+                                <div className="pasteArea">
+                                    <div className="pasteCard">
+                                        <span className="pasteLabel pasteLabelBefore">① Before（変更前）</span>
+                                        <textarea
+                                            className="pasteTextarea"
+                                            placeholder="変更前のコードをここに貼り付け..."
+                                            value={pasteBefore}
+                                            onChange={e => setPasteBefore(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="pasteCard">
+                                        <span className="pasteLabel pasteLabelAfter">② After（変更後）</span>
+                                        <textarea
+                                            className="pasteTextarea"
+                                            placeholder="AIで変更した後のコードをここに貼り付け..."
+                                            value={pasteAfter}
+                                            onChange={e => setPasteAfter(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="pasteActions">
+                                    <button
+                                        className="pasteCompareBtn"
+                                        onClick={handlePasteCompare}
+                                        disabled={!pasteBefore.trim() || !pasteAfter.trim()}
+                                    >
+                                        ⚡ 差分を比較する
+                                    </button>
+                                    <button className="pasteClearBtn" onClick={() => { setPasteBefore(''); setPasteAfter(''); setPasteFilename(''); }}>クリア</button>
+                                </div>
+                            </div>
+                        )}
 
                         {loading && <div className="spinner"></div>}
 
